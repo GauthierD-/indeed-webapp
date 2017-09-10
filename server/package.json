@@ -1,0 +1,44 @@
+{
+  "name": "indeed-webapp",
+  "version": "1.0.0",
+  "description": "blablablablabla",
+  "main": "src/index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon --watch src",
+    "pretest": "standard",
+    "test": "tape 'tests/**/*.test.js'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/GauthierD-/indeed-webapp.git"
+  },
+  "keywords": [
+    "indeed",
+    "react",
+    "node"
+  ],
+  "author": "l'abeille coule",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/GauthierD-/indeed-webapp/issues"
+  },
+  "homepage": "https://github.com/GauthierD-/indeed-webapp#readme",
+  "dependencies": {
+    "bluebird": "3.5.0",
+    "body-parser": "1.18.0",
+    "cors": "2.8.4",
+    "express": "4.15.4",
+    "ioredis": "3.1.4",
+    "nconf": "0.8.4",
+    "request-promise": "4.2.1"
+  },
+  "devDependencies": {
+    "nodemon": "1.12.0",
+    "standard": "10.0.3",
+    "tape": "4.8.0"
+  }
+}
