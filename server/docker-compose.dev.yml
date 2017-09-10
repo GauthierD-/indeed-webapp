@@ -1,0 +1,27 @@
+#
+# Docker compose: Stack for development for persistent storage
+#
+version: '2'
+services:
+  indeed:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    command: ['npm', 'run', 'dev']
+    links:
+      - redis
+    ports:
+      - "3001:8000"
+    volumes:
+      - ./config:/home/node/config
+      - ./etc:/home/node/etc
+      - ./src:/home/node/src
+      - ./tests:/home/node/tests
+      - ./coverage:/home/node/coverage
+
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - ~/data/redis:/data
