@@ -1,7 +1,7 @@
 import React from 'react'
 import Job from './Job'
 
-function JobsList ({ jobs }) {
+function JobsList ({ jobs, saveJob, deleteJob }) {
   if (jobs.length === 0) {
     return (
       <p>Empty jobs</p>
@@ -10,7 +10,9 @@ function JobsList ({ jobs }) {
 
   return (
     <div>
-      {jobs.map((el, i) => <Job key={i} infos={el} />)}
+      {jobs.map((el, i) => (
+        <Job key={i} infos={el} saveJob={saveJob} deleteJob={deleteJob} />
+      ))}
     </div>
   )
 }
