@@ -3,6 +3,7 @@ import React, { Component } from 'react'
 import logo from './logo.svg'
 import './App.css'
 import JobsList from './JobsList'
+import { isEmpty } from 'lodash'
 
 class App extends Component {
   constructor (props) {
@@ -18,6 +19,8 @@ class App extends Component {
     this.onChangeLocation = this.onChangeLocation.bind(this)
     this.findJobs = this.findJobs.bind(this)
     this.findJobsByLocation = this.findJobsByLocation.bind(this)
+    this.saveJob = this.saveJob.bind(this)
+    this.deleteJob = this.deleteJob.bind(this)
   }
 
   onChangeUser (event) {
@@ -50,6 +53,69 @@ class App extends Component {
       .catch(console.error)
   }
 
+  saveJob (job) {
+    // need debounce
+    if (isEmpty(this.state.username)) {
+      window.alert('NEED USERNAME')
+    } else {
+      const payload = {
+        user: this.state.username,
+        job
+      }
+      fetch(`http://localhost:3001/indeed/job/save`, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+        .then((response) => {
+          return response.json()
+        })
+        .then((resp) => {
+          if (resp.data && resp.data.save) {
+            window.alert('Saved')
+          }
+        })
+        .catch(console.error)
+    }
+  }
+
+  deleteJob (job) {
+    // need debounce
+    if (isEmpty(this.state.username)) {
+      window.alert('NEED USERNAME')
+    } else {
+      const jobIndex = this.state.jobs.findIndex((el) => el.name === job.name)
+      // Latency compensation
+      this.setState((state) => ({
+        jobs: state.jobs.filter((_, i) => i !== jobIndex)
+      }))
+
+      const payload = {
+        user: this.state.username,
+        job
+      }
+      fetch(`http://localhost:3001/indeed/job`, {
+        method: 'DELETE',
+        body: JSON.stringify(payload),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+        .then((response) => {
+          return response.json()
+        })
+        .then((resp) => {
+          if (resp.data && resp.data.delete) {
+            window.alert('Deleted')
+          }
+          this.findJobs()
+        })
+        .catch(console.error)
+    }
+  }
+
   render () {
     return (
       <div className='App'>
@@ -73,7 +139,11 @@ class App extends Component {
           <button onClick={this.findJobsByLocation}>Find jobs</button>
         </div>
 
-        <JobsList jobs={this.state.jobs} />
+        <JobsList
+          jobs={this.state.jobs}
+          saveJob={this.saveJob}
+          deleteJob={this.deleteJob}
+        />
 
       </div>
     )
