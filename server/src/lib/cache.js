@@ -47,9 +47,24 @@ const getCache = Promise.method((hash) => {
   return redisClient.hgetall(hash)
 })
 
+const deleteCache = Promise.method((hash, field) => {
+  if (!hash) {
+    throw new Error('Hash is missing')
+  }
+
+  const redisClient = databases.redis
+
+  if (!redisClient) {
+    throw new Error('RedisClient is missing')
+  }
+
+  return redisClient.hdel(hash, field)
+})
+
 module.exports = {
   redisConnect,
   databases,
   setCache,
-  getCache
+  getCache,
+  deleteCache
 }
