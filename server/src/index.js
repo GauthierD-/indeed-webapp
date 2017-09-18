@@ -21,6 +21,8 @@ Promise.props(connect)
 
     app.use(cors({ maxAge: 10 * 60 }))
     app.use(bodyParser.json())
+    app.use(bodyParser.text())
+    app.use(bodyParser.urlencoded({ extended: false }))
 
     app.use('/health', (req, res) => {
       res.json({ ok: 1 })
