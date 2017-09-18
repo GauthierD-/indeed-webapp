@@ -1,43 +1,75 @@
 'use strict'
 
-// const request = require('request-promise')
+const request = require('request-promise')
+const moment = require('moment')
 const express = require('express')
 const router = express.Router()
 
-const { setCache, getCache } = require('../lib/cache')
+const settings = require('../../config')
+const { setCache, getCache, deleteCache } = require('../lib/cache')
 
 router.get('/jobs/:location', (req, res, next) => {
   const location = req.params && req.params.location
-  console.log('location ==', location)
-  // Wait for indeed API KEY
-  // request({
-  //   uri: 'api-indeed',
-  //   method: 'GET',
-  //   qs: {
-  //     location
-  //   },
-  //   headers: {
-  //     'publish-id': '__id__'
-  //   },
-  //   json: true // Automatically parses the JSON string in the response
-  // })
-  //   .then((result) => {
-  //     // sort by date
-  //     res.json({ data: { jobs: result } })
-  //   })
-  //   .catch(next)
 
-  res.json({ data: { jobs: [] } })
+  return request({
+    url: `${settings.get('API_URI')}?LocationName=${location}`,
+    method: 'GET',
+    headers: {
+      'Host': settings.get('API_HOST'),
+      'User-Agent': settings.get('API_UA'),
+      'Authorization-Key': settings.get('API_KEY')
+    },
+    json: true
+  })
+    .then((resp) => {
+      // sort by date
+      let result = []
+      if (resp.SearchResult) {
+        result = resp.SearchResult.SearchResultItems.map((el) => {
+          return {
+            name: el.MatchedObjectDescriptor.PositionTitle,
+            date: moment(el.MatchedObjectDescriptor.PublicationStartDate),
+            description: el.MatchedObjectDescriptor.QualificationSummary.slice(0, 140),
+            salary: el.MatchedObjectDescriptor.PositionRemuneration[0].MinimumRange,
+            salaryInterval: el.MatchedObjectDescriptor.PositionRemuneration[0].RateIntervalCode
+          }
+        })
+          .sort((a, b) => b.date - a.date)
+      }
+      res.json({ data: { jobs: result } })
+    })
+    .catch(next)
 })
 
 router.post('/job/save', (req, res, next) => {
   const user = req.body && req.body.user
   const job = req.body && req.body.job
-  setCache(`job:${user}`, job.title, JSON.stringify(job))
-    .then(() => {
-      res.status(201).json({ data: { save: true } })
-    })
-    .catch(next)
+
+  if (!job || !job.name) {
+    return res.status(400).json({ data: { save: false } })
+  } else {
+    const jobSaved = Object.assign({}, job, { isSaved: true })
+    setCache(`job:${user}`, job.name, JSON.stringify(jobSaved))
+      .then(() => {
+        res.status(201).json({ data: { save: true } })
+      })
+      .catch(next)
+  }
+})
+
+router.delete('/job', (req, res, next) => {
+  const user = req.body && req.body.user
+  const job = req.body && req.body.job
+
+  if (!job || !job.name) {
+    return res.status(400).json({ data: { delete: false } })
+  } else {
+    deleteCache(`job:${user}`, job.name)
+      .then(() => {
+        res.status(201).json({ data: { delete: true } })
+      })
+      .catch(next)
+  }
 })
 
 router.get('/my/jobs/:user', (req, res, next) => {
